@@ -1,8 +1,0 @@
----
-- name: configure dataguard 
-  hosts: lr1008
-
-  vars_files:
-    - roles/dataguard/vars/main.yml
-  tasks:
-    - include_tasks: roles/dataguard/tasks/configure_dataguard.yml
