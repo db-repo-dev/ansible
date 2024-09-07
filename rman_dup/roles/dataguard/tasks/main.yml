@@ -38,13 +38,13 @@
   include_tasks: rman_dup.yml
 
 
-#### post steps
+#### Add primary and standby aliases to $ORACLE_HOME/network/admin/tnsnames.ora
 
-- name: add to tnsnames.ora
+- name: add primary and standby aliases to tnsnames.ora in standby
   include_tasks: add_target_tns.yml
   when: inventory_hostname == target_host  
 
-- name: add to tnsnames.ora
+- name: add standby alias to tnsnames.ora in primary
   include_tasks: add_source_tns.yml
   when: inventory_hostname == source_host  
 
