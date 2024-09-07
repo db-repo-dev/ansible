@@ -1,5 +1,0 @@
-- name: configure dataguard broker
-  shell: |
-    sh /proj/exports/rman_dup/config_dg.sh
-
-
