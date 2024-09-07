@@ -4,7 +4,8 @@ The structure includes configuration files, scripts, and templates to automate t
 
 # File Structure
 
-
+![
+](![https://github.com/db-repo-dev/ansible/blob/main/file_structure.jpg]))
 
 
 # Replace your own wallet using the following commands:
