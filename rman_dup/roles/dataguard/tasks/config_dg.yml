@@ -1,0 +1,9 @@
+- name: Create DataGuard
+  template:
+    src: dg_config.sh.j2
+    dest: "{{ stage_dir }}/dg_config.sh"
+    mode: 0755
+
+- name: Run dg
+  shell: |
+    sh {{ stage_dir }}/dg_config.sh

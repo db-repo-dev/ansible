@@ -1,0 +1,17 @@
+source =
+(DESCRIPTION =
+    (ADDRESS = (PROTOCOL = TCP)(HOST = {{ source_host }} )(PORT = {{ rman_port }}))
+    (CONNECT_DATA =
+        (SERVER = DEDICATED)
+        (SID = {{ primary_sid }})
+    )
+)
+
+target =
+(DESCRIPTION =
+    (ADDRESS = (PROTOCOL = TCP)(HOST = {{ target_host }})(PORT = {{ rman_port }}))
+    (CONNECT_DATA =
+        (SERVER = DEDICATED)
+        (SID = {{ standby_sid }})
+    )
+)

@@ -1,0 +1,12 @@
+- name: Configure Data Guard
+  shell: |
+    export ORACLE_SID={{ primary_sid }}
+    export ORAENV_ASK=NO
+    . oraenv > /dev/null
+    
+    dgmgrl <<EOF
+    connect / as sysdba
+    create configuration oem as primary database is {{ primary_sid }} connect identifier is {{ primary_sid }};
+    add database {{ standby_sid }} as connect identifier is {{ standby_sid }};
+    enable configuration
+    EOF

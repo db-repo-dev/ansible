@@ -1,0 +1,14 @@
+- name: configure dataguard broker
+  shell: |
+    sh /proj/exports/rman_dup/config_dg.sh
+
+- name: Switchover
+  shell: |
+    export ORACLE_SID="oemtcdb"
+    export ORAENV_ASK=NO
+    . oraenv > /dev/null
+    
+    dgmgrl / as sysdba <<EOF
+     switchover to oemtcdb1 
+    EOF
+

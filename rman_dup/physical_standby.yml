@@ -1,0 +1,5 @@
+- hosts: rac3, rac5 
+  user: oracle
+
+  roles:
+   - dataguard 

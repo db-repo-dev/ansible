@@ -1,0 +1,13 @@
+LISTENER_RMAN =
+    (DESCRIPTION =
+        (ADDRESS = (PROTOCOL = TCP)(HOST = {{ source_host }})(PORT = {{ rman_port }}))
+    )
+
+SID_LIST_LISTENER_RMAN =
+    (SID_LIST =
+        (SID_DESC =
+            (GLOBAL_DBNAME = {{ primary_sid }}_DGMGRL)
+            (ORACLE_HOME = {{ oracle_home }})
+            (SID_NAME = {{ primary_sid }})
+        )
+    )

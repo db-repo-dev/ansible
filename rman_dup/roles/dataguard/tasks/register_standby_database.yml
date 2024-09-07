@@ -1,0 +1,26 @@
+---
+- name: Check if standby database is already registered
+  shell: |
+    export ORACLE_HOME={{ oracle_home }}
+    export PATH=${ORACLE_HOME}/bin:$PATH
+    export ORACLE_SID={{ asm }}
+    srvctl config database |grep {{ standby_sid }}
+  register: chk_registration
+  ignore_errors: yes
+
+- name: Register standby database with srvctl
+  shell: |
+    export ORACLE_HOME={{ oracle_home }}
+    export PATH=${ORACLE_HOME}/bin:$PATH
+    export ORACLE_SID={{ asm }}
+    srvctl add database -d {{ standby_sid }} -o {{ oracle_home }} -r PHYSICAL_STANDBY -startoption mount
+    export ORACLE_SID={{ standby_sid }}
+    sqlplus / as sysdba <<EOF
+    shutdown immediate;
+    startup
+    exit;
+    EOF
+  when: chk_registration.rc != 0
+
+
+

@@ -1,0 +1,238 @@
+[root@ansible0 rman_dup]# ansible-playbook physical_standby.yml
+
+PLAY [db1, db2] ******************************************************************************************************************************************************************************************
+
+TASK [Gathering Facts] *************************************************************************************************************************************************************************************
+ok: [db2]
+ok: [db1]
+
+TASK [dataguard : Create required directories] *************************************************************************************************************************************************************
+ok: [db2] => (item=/u01/stage)
+ok: [db1] => (item=/u01/stage)
+ok: [db2] => (item=/u01/stage/tns)
+changed: [db1] => (item=/u01/stage/tns)
+
+TASK [dataguard : Copy sqlnet.ora file to target] **********************************************************************************************************************************************************
+ok: [db2]
+changed: [db1]
+
+TASK [dataguard : Synchronize wallet files to target] ******************************************************************************************************************************************************
+ok: [db2]
+changed: [db1]
+
+TASK [dataguard : source] **********************************************************************************************************************************************************************************
+skipping: [db1]
+included: /rman_dup/roles/dataguard/tasks/source.yml for db2
+
+TASK [dataguard : Create Source Listener] ******************************************************************************************************************************************************************
+ok: [db2]
+
+TASK [dataguard : Create tnsnames.ora] *********************************************************************************************************************************************************************
+ok: [db2]
+
+TASK [dataguard : Start LISTENER_RMAN] *********************************************************************************************************************************************************************
+changed: [db2]
+
+TASK [dataguard : Debug db_listener output] ****************************************************************************************************************************************************************
+ok: [db2] => {
+    "db_listener.stdout_lines": [
+        "",
+        "LSNRCTL for Linux: Version 19.0.0.0.0 - Production on 06-SEP-2024 22:13:29",
+        "",
+        "Copyright (c) 1991, 2024, Oracle.  All rights reserved.",
+        "",
+        "Starting /u01/ansible-playbookp/oracle/product/19.3.0/db_1/bin/tnslsnr: please wait...",
+        "",
+        "TNSLSNR for Linux: Version 19.0.0.0.0 - Production",
+        "System parameter file is /u01/stage/tns/listener.ora",
+        "Log messages written to /u01/ansible-playbookp/oracle/diag/tnslsnr/db2/listener_rman/alert/log.xml",
+        "Listening on: (DESCRIPTION=(ADDRESS=(PROTOCOL=tcp)(HOST=db2)(PORT=1999)))",
+        "",
+        "Connecting to (DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=db2)(PORT=1999)))",
+        "STATUS of the LISTENER",
+        "------------------------",
+        "Alias                     LISTENER_RMAN",
+        "Version                   TNSLSNR for Linux: Version 19.0.0.0.0 - Production",
+        "Start Date                06-SEP-2024 22:13:29",
+        "Uptime                    0 days 0 hr. 0 min. 0 sec",
+        "Trace Level               off",
+        "Security                  ON: Local OS Authentication",
+        "SNMP                      OFF",
+        "Listener Parameter File   /u01/stage/tns/listener.ora",
+        "Listener Log File         /u01/ansible-playbookp/oracle/diag/tnslsnr/db2/listener_rman/alert/log.xml",
+        "Listening Endpoints Summary...",
+        "  (DESCRIPTION=(ADDRESS=(PROTOCOL=tcp)(HOST=db2)(PORT=1999)))",
+        "Services Summary...",
+        "Service \"cdb1_DGMGRL\" has 1 instance(s).",
+        "  Instance \"cdb1\", status UNKNOWN, has 1 handler(s) for this service...",
+        "The command completed successfully"
+    ]
+}
+
+TASK [dataguard : target] **********************************************************************************************************************************************************************************
+skipping: [db2]
+included: /rman_dup/roles/dataguard/tasks/target.yml for db1
+
+TASK [dataguard : Check if cdb2 entry exists in /etc/oratab] ***********************************************************************************************************************************************
+fatal: [db1]: FAILED! => {"changed": true, "cmd": "cat /etc/oratab |grep \"cdb2\" \n", "delta": "0:00:00.003525", "end": "2024-09-06 22:13:29.472969", "msg": "non-zero return code", "rc": 1, "start": "2024-09-06 22:13:29.469444", "stderr": "", "stderr_lines": [], "stdout": "", "stdout_lines": []}
+...ignoring
+
+TASK [dataguard : add standby to /etc/oratab] **************************************************************************************************************************************************************
+changed: [db1]
+
+TASK [dataguard : Create Target Listener] ******************************************************************************************************************************************************************
+changed: [db1]
+
+TASK [dataguard : Create tnsnames.ora] *********************************************************************************************************************************************************************
+changed: [db1]
+
+TASK [dataguard : Start LISTENER_RMAN] *********************************************************************************************************************************************************************
+changed: [db1]
+
+TASK [dataguard : Debug db_listener output] ****************************************************************************************************************************************************************
+ok: [db1] => {
+    "db_listener.stdout_lines": [
+        "",
+        "LSNRCTL for Linux: Version 19.0.0.0.0 - Production on 06-SEP-2024 22:13:31",
+        "",
+        "Copyright (c) 1991, 2024, Oracle.  All rights reserved.",
+        "",
+        "Starting /u01/ansible-playbookp/oracle/product/19.3.0/db_1/bin/tnslsnr: please wait...",
+        "",
+        "TNSLSNR for Linux: Version 19.0.0.0.0 - Production",
+        "System parameter file is /u01/stage/tns/listener.ora",
+        "Log messages written to /u01/ansible-playbookp/oracle/diag/tnslsnr/db1/listener_rman/alert/log.xml",
+        "Listening on: (DESCRIPTION=(ADDRESS=(PROTOCOL=tcp)(HOST=db1)(PORT=1999)))",
+        "",
+        "Connecting to (DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=db1)(PORT=1999)))",
+        "STATUS of the LISTENER",
+        "------------------------",
+        "Alias                     LISTENER_RMAN",
+        "Version                   TNSLSNR for Linux: Version 19.0.0.0.0 - Production",
+        "Start Date                06-SEP-2024 22:13:31",
+        "Uptime                    0 days 0 hr. 0 min. 0 sec",
+        "Trace Level               off",
+        "Security                  ON: Local OS Authentication",
+        "SNMP                      OFF",
+        "Listener Parameter File   /u01/stage/tns/listener.ora",
+        "Listener Log File         /u01/ansible-playbookp/oracle/diag/tnslsnr/db1/listener_rman/alert/log.xml",
+        "Listening Endpoints Summary...",
+        "  (DESCRIPTION=(ADDRESS=(PROTOCOL=tcp)(HOST=db1)(PORT=1999)))",
+        "Services Summary...",
+        "Service \"cdb2_DGMGRL\" has 1 instance(s).",
+        "  Instance \"cdb2\", status UNKNOWN, has 1 handler(s) for this service...",
+        "The command completed successfully"
+    ]
+}
+
+TASK [dataguard : Fetching Oracle Password File from Primary Database cdb1] ********************************************************************************************************************************
+ok: [db1 -> db2]
+
+TASK [dataguard : Copy Oracle Password File from Source Database cdb1 to Target Host db1] *****************************************************************************************************************
+changed: [db1]
+
+TASK [dataguard : Create required directories] *************************************************************************************************************************************************************
+changed: [db1] => (item=/u01/ansible-playbookp/oracle/diag/rdbms/cdb2/cdb2/trace)
+changed: [db1] => (item=/u01/ansible-playbookp/oracle/admin/cdb2/adump)
+
+TASK [dataguard : RMAN_duplicate] **************************************************************************************************************************************************************************
+included: /rman_dup/roles/dataguard/tasks/rman_dup.yml for db1, db2
+
+TASK [dataguard : mount standby] ***************************************************************************************************************************************************************************
+skipping: [db2]
+changed: [db1]
+
+TASK [dataguard : Create RMAN Commandfile for duplicate] ***************************************************************************************************************************************************
+changed: [db1]
+
+TASK [dataguard : rman duplicate] **************************************************************************************************************************************************************************
+skipping: [db2]
+changed: [db1]
+
+TASK [dataguard : stop listener rman_listener] *************************************************************************************************************************************************************
+skipping: [db1]
+changed: [db2]
+
+TASK [dataguard : add to tnsnames.ora] *********************************************************************************************************************************************************************
+skipping: [db2]
+included: /rman_dup/roles/dataguard/tasks/add_target_tns.yml for db1
+
+TASK [dataguard : Set Oracle environment variables] ********************************************************************************************************************************************************
+ok: [db1]
+
+TASK [dataguard : Check if TNS file exists] ****************************************************************************************************************************************************************
+ok: [db1]
+
+TASK [dataguard : Create TNS file if missing] **************************************************************************************************************************************************************
+changed: [db1]
+
+TASK [dataguard : Check if TNS entry exists] ***************************************************************************************************************************************************************
+changed: [db1]
+
+TASK [dataguard : Create the required TNS entry if it doesn't exist] ***************************************************************************************************************************************
+changed: [db1]
+
+TASK [dataguard : Print message if the entry already exists] ***********************************************************************************************************************************************
+skipping: [db1]
+
+TASK [dataguard : add to tnsnames.ora] *********************************************************************************************************************************************************************
+skipping: [db1]
+included: /rman_dup/roles/dataguard/tasks/add_source_tns.yml for db2
+
+TASK [dataguard : Check if TNS file exists] ****************************************************************************************************************************************************************
+ok: [db2]
+
+TASK [dataguard : Create TNS file if missing] **************************************************************************************************************************************************************
+skipping: [db2]
+
+TASK [dataguard : Check if TNS entry exists] ***************************************************************************************************************************************************************
+changed: [db2]
+
+TASK [dataguard : Create the required TNS entry if it doesn't exist] ***************************************************************************************************************************************
+ok: [db2]
+
+TASK [dataguard : Print message if the entry already exists] ***********************************************************************************************************************************************
+skipping: [db2]
+
+PLAY RECansible-playbook *************************************************************************************************************************************************************************************************
+db1                       : ok=24   changed=16   unreachable=0    failed=0    skipped=4    rescued=0    ignored=1
+db2                       : ok=15   changed=3    unreachable=0    failed=0    skipped=6    rescued=0    ignored=0
+
+
+[root@ansible0 rman_dup]# ansible-playbook post_dg.yml
+
+PLAY [Register and configure Data Guard] *******************************************************************************************************************************************************************
+
+TASK [Gathering Facts] *************************************************************************************************************************************************************************************
+ok: [db2]
+ok: [db1]
+
+TASK [include_tasks] ***************************************************************************************************************************************************************************************
+included: /rman_dup/roles/dataguard/tasks/post_dg.yml for db1, db2
+
+TASK [Register standby database] ***************************************************************************************************************************************************************************
+skipping: [db2]
+included: /rman_dup/roles/dataguard/tasks/register_standby_database.yml for db1
+
+TASK [Check if standby database is already registered] *****************************************************************************************************************************************************
+fatal: [db1]: FAILED! => {"changed": true, "cmd": "export ORACLE_HOME=/u01/ansible-playbookp/oracle/product/19.3.0/db_1\nexport PATH=${ORACLE_HOME}/bin:$PATH\nexport ORACLE_SID=+ASM\nsrvctl config database |grep cdb2\n", "delta": "0:00:00.340317", "end": "2024-09-06 22:16:11.055791", "msg": "non-zero return code", "rc": 1, "start": "2024-09-06 22:16:10.715474", "stderr": "", "stderr_lines": [], "stdout": "", "stdout_lines": []}
+...ignoring
+
+TASK [Register standby database with srvctl] ***************************************************************************************************************************************************************
+changed: [db1]
+
+TASK [Configure Data Guard] ********************************************************************************************************************************************************************************
+skipping: [db1]
+included: /rman_dup/roles/dataguard/tasks/configure_dataguard.yml for db2
+
+TASK [Configure Data Guard] ********************************************************************************************************************************************************************************
+changed: [db2]
+
+TASK [Display Data Guard status] ***************************************************************************************************************************************************************************
+ok: [db2] => {
+    "msg": "DGMGRL for Linux: Release 19.0.0.0.0 - Production on Fri Sep 6 22:16:59 2024\nVersion 19.23.0.0.0\n\nCopyright (c) 1982, 2019, Oracle and/or its affiliates.  All rights reserved.\n\nWelcome to DGMGRL, type \"help\" for information.\nDGMGRL> Connected to \"cdb1\"\nConnected as SYSDBA.\nDGMGRL> Configuration \"oem\" created with primary database \"cdb1\"\nDGMGRL> Database \"cdb2\" added\nDGMGRL> Enabled.\nDGMGRL> DGMGRL> "
+}
+
+PLAY RECansible-playbook *************************************************************************************************************************************************************************************************
+db1                       : ok=5    changed=2    unreachable=0    failed=0    skipped=1    rescued=0    ignored=1
+db2                       : ok=5    changed=1    unreachable=0    failed=0    skipped=1    rescued=0    ignored=0

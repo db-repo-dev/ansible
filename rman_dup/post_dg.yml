@@ -1,0 +1,9 @@
+- name: Register and configure Data Guard
+  hosts: "{{ target_host }} , {{ source_host }}"
+  user: oracle
+
+  vars_files:
+    - roles/dataguard/vars/main.yml
+
+  tasks:
+    - include_tasks: roles/dataguard/tasks/post_dg.yml

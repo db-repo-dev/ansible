@@ -1,0 +1,51 @@
+---
+- name: Create required directories
+  become_user: "{{ oracle_user }}"
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ oracle_user }}"
+    group: "{{ oracle_install_group }}"
+    mode: '0775'
+  with_items:
+    - "{{ stage_dir }}"
+    - "{{ tns_admin }}"
+
+
+- name: Copy sqlnet.ora file to target
+  template:
+    src: sqlnet.ora.j2
+    dest: "{{ tns_admin }}/sqlnet.ora"
+
+
+
+- name: Synchronize wallet files to target
+  synchronize:
+    src: "{{ role_path }}/files/wallet/"
+    dest: "{{ tns_admin }}/wallet"
+    mode: push
+
+- name: source
+  include_tasks: source.yml
+  when: inventory_hostname == source_host
+
+- name: target
+  include_tasks: target.yml
+  when: inventory_hostname == target_host  
+
+
+- name: RMAN_duplicate
+  include_tasks: rman_dup.yml
+
+
+#### post steps
+
+- name: add to tnsnames.ora
+  include_tasks: add_target_tns.yml
+  when: inventory_hostname == target_host  
+
+- name: add to tnsnames.ora
+  include_tasks: add_source_tns.yml
+  when: inventory_hostname == source_host  
+
+

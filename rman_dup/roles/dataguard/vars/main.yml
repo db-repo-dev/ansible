@@ -1,0 +1,31 @@
+---
+primary_sid: "cdb1"
+standby_sid: "cdb2"
+db_name: "cdb1"
+oracle_home: "/u01/app/oracle/product/19.3.0/db_1"  # Update this with the actual path
+dbs_path: "{{ oracle_home }}/dbs"
+exclude_files:
+  - "{{ dbs_path }}/orapw{{ oracle_sid }}1"
+  - "{{ dbs_path }}/init{{ oracle_sid }}1.ora"
+
+asm: "+ASM"
+source_password_file: "orapw{{ primary_sid }}"
+target_password_file: "orapw{{ standby_sid }}"
+
+oracle_user: "oracle"
+stage_dir: "/u01/stage"
+
+source_host: rac5 
+target_host: rac3 
+
+rman_port: 1999
+listener_port: 1521
+
+tns_admin: "{{ stage_dir }}/tns"
+wallet_loc: "{{ stage_dir }}/tns/wallet"
+oracle_install_group: oinstall 
+
+
+listener_name: "LISTENER_{{ standby_sid | upper }}"
+
+tnsnames_file_path: "{{ oracle_home }}/network/admin/tnsnames.ora"

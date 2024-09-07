@@ -1,0 +1,17 @@
+- name: Configure srvctl for {{ standby_sid }}
+  shell: |
+    export ORACLE_SID="{{ asm }}"
+    export ORAENV_ASK=NO
+    . oraenv > /dev/null
+    srvctl add database \
+      -db {{ standby_sid }} \
+      -oraclehome {{ oracle_home }} \
+      -dbname {{ db_name }} \
+      -role PHYSICAL_STANDBY \
+      -startoption mount \
+      -stopoption immediate \
+      -policy AUTOMATIC \
+      -diskgroup "DATA"
+    srvctl stop database -d {{ standby_sid }}
+    srvctl start database -d {{ standby_sid }}
+

@@ -1,0 +1,36 @@
+- name: Check if TNS file exists
+  stat:
+    path: "{{ tnsnames_file_path }}"
+  register: tnsnames_file_stat
+
+
+- name: Create TNS file if missing
+  file:
+    path: "{{ tnsnames_file_path }}"
+    state: touch
+  when: not tnsnames_file_stat.stat.exists
+
+- name: Check if TNS entry exists
+  shell: grep "{{ standby_sid }} =" "{{ tnsnames_file_path }}" || true
+  register: chk_entry
+  ignore_errors: yes
+
+- name: Create the required TNS entry if it doesn't exist
+  blockinfile:
+    path: "{{ tnsnames_file_path }}"
+    block: |
+      {{ standby_sid }} =
+        (DESCRIPTION =
+          (ADDRESS = (PROTOCOL = TCP)(HOST = {{ target_host }})(PORT = {{ listener_port }}))
+          (CONNECT_DATA =
+            (SERVER = DEDICATED)
+            (SID = {{ standby_sid }})
+          )
+        )
+  when: chk_entry.stdout | int == 0
+
+
+- name: Print message if the entry already exists
+  debug:
+    msg: "This entry already exists: [{{ standby_sid }}]. Nothing to do!"
+  when: chk_entry.stdout | int != 0

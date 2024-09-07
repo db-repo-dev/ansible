@@ -1,0 +1,48 @@
+- name: mount standby
+  shell: |
+    export ORACLE_SID={{ standby_sid }}
+    export TNS_ADMIN={{ tns_admin }}
+    export ORACLE_HOME={{ oracle_home }}
+    export PATH=$ORACLE_HOME/bin:$PATH
+    echo "db_name={{ db_name }}" > $ORACLE_HOME/dbs/init$ORACLE_SID.ora
+    sqlplus / as sysdba <<EOF
+    startup nomount 
+    EOF
+  when: inventory_hostname == target_host    
+
+- name: Create RMAN Commandfile for duplicate
+  template:
+    src: "{{ role_path }}/templates/rman_dup.par.j2"
+    dest: "{{ stage_dir }}/rman_dup.par"
+    mode: 0755
+  delegate_to: "{{ target_host }}"
+  run_once: true
+    #  when: inventory_hostname == source_host
+  when: inventory_hostname == target_host
+
+
+- name: rman duplicate 
+  shell: |
+    export ORACLE_SID={{ standby_sid }}
+    export TNS_ADMIN={{ tns_admin }}
+    export ORACLE_HOME={{ oracle_home }}
+    export PATH=$ORACLE_HOME/bin:$PATH
+
+    rman target /@source auxiliary /@target cmdfile={{ stage_dir }}/rman_dup.par log={{ stage_dir }}/rman.log
+    lsnrctl stop LISTENER_RMAN
+    #when: inventory_hostname == source_host
+  when: inventory_hostname == target_host
+
+
+
+
+- name: stop listener rman_listener
+  shell: |
+    export ORACLE_SID={{ primary_sid }}
+    export TNS_ADMIN={{ tns_admin }}
+    export ORACLE_HOME={{ oracle_home }}
+    export PATH=$ORACLE_HOME/bin:$PATH
+
+    lsnrctl stop LISTENER_RMAN
+  when: inventory_hostname == source_host
+  

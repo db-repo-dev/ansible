@@ -1,0 +1,58 @@
+- name: Set Oracle environment variables
+  set_fact:
+    tnsnames_file_path: "{{ oracle_home }}/network/admin/tnsnames.ora"
+    
+
+- name: Check if TNS file exists
+  stat:
+    path: "{{ tnsnames_file_path }}"
+  register: tnsnames_file_stat
+
+
+- name: Create TNS file if missing
+  file:
+    path: "{{ tnsnames_file_path }}"
+    state: touch
+  when: not tnsnames_file_stat.stat.exists
+
+
+- name: Check if TNS entry exists
+  shell: |
+    grep -E "{{ standby_sid }} =|{{ listener_name }} =" "{{ tnsnames_file_path }}" || true
+  register: chk_entry
+  ignore_errors: yes
+
+
+- name: Create the required TNS entry if it doesn't exist
+  blockinfile:
+    path: "{{ tnsnames_file_path }}"
+    block: |
+      {{ listener_name }} =
+        (ADDRESS = (PROTOCOL = TCP)(HOST = {{ target_host }})(PORT = {{ listener_port }}))
+
+      {{ standby_sid }} =
+        (DESCRIPTION =
+          (ADDRESS = (PROTOCOL = TCP)(HOST = {{ target_host }})(PORT = {{ listener_port }}))
+          (CONNECT_DATA =
+            (SERVER = DEDICATED)
+            (SID = {{ standby_sid }})
+          )
+        )
+
+      {{ primary_sid }} =
+        (DESCRIPTION =
+          (ADDRESS = (PROTOCOL = TCP)(HOST = {{ source_host }})(PORT = {{ listener_port }}))
+          (CONNECT_DATA =
+            (SERVER = DEDICATED)
+            (SID = {{ primary_sid }})
+          )
+        )  
+  when: chk_entry.stdout | int == 0
+
+
+
+
+- name: Print message if the entry already exists
+  debug:
+    msg: "This entry already exists: [{{ standby_sid }}]. Nothing to do!"
+  when: chk_entry.stdout | int != 0

@@ -1,0 +1,12 @@
+- name: Register standby database
+  include_tasks: register_standby_database.yml
+  when: inventory_hostname == target_host
+
+
+- name: Configure Data Guard
+  include_tasks: configure_dataguard.yml
+  when: inventory_hostname == source_host
+
+
+
+

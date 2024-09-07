@@ -1,0 +1,69 @@
+- name: Check if {{ standby_sid }} entry exists in /etc/oratab
+  shell: |
+    cat /etc/oratab |grep "{{ standby_sid }}" 
+  register: chk_entry
+  ignore_errors: yes
+
+- name: add standby to /etc/oratab
+  shell: |
+    echo "{{ standby_sid }}:{{ oracle_home }}:N" >> /etc/oratab
+  when: chk_entry.stdout | int == 0    
+
+- name: Create Target Listener
+  template:
+    src: "{{ role_path }}/templates/standby_listener.ora.j2"
+    dest: "{{ stage_dir }}/tns/listener.ora"
+    mode: 0755
+
+- name: Create tnsnames.ora
+  template:
+    src: "{{ role_path }}/templates/tnsnames.ora.j2"
+    dest: "{{ stage_dir }}/tns/tnsnames.ora"
+    mode: 0755
+
+- name: Start LISTENER_RMAN
+  shell: |
+      export ORACLE_HOME={{ oracle_home }}
+      export PATH=${ORACLE_HOME}/bin:$PATH
+      export ORACLE_SID={{ standby_sid }}
+      export TNS_ADMIN={{ tns_admin }}
+      lsnrctl start LISTENER_RMAN
+  register: db_listener
+
+- name: Debug db_listener output
+  debug: 
+    var: db_listener.stdout_lines 
+
+
+############# START of Copy password file ##################
+- name: Fetching Oracle Password File from Primary Database {{ primary_sid }}
+  fetch:
+    src: "{{ oracle_home }}/dbs/orapw{{ primary_sid }}"
+    dest: "{{ role_path }}/files/orapw{{ primary_sid }}"
+    flat: true
+  delegate_to: "{{ source_host }}"
+  run_once: true
+
+
+- name: Copy Oracle Password File from Source Database {{ primary_sid }} to Target Host {{ target_host }}
+  copy:
+    src: "{{ role_path }}/files/orapw{{ primary_sid }}"
+    dest: "{{ oracle_home }}/dbs/orapw{{ standby_sid }}"
+    remote_src: false
+    mode: 0640
+  delegate_to: "{{ target_host }}"
+  run_once: true
+
+############# END of Copy password file ##################
+
+- name: Create required directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ oracle_user }}"
+    group: "{{ oracle_install_group }}"
+    mode: '0775'
+  with_items:
+    - "/u01/app/oracle/diag/rdbms/{{ standby_sid }}/{{ standby_sid }}/trace"
+    - "/u01/app/oracle/admin/{{ standby_sid }}/adump"
+
