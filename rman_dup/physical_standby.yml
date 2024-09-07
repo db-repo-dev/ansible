@@ -1,4 +1,4 @@
-- hosts: rac3, rac5 
+- hosts: all
   user: oracle
 
   roles:
